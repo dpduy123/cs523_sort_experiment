@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description"
+    content="SortEx – Ứng dụng sắp xếp và minh họa thuật toán trên tập tin nhị phân chứa số thực 8 bytes">
+  <title>SortEx – Sắp Xếp Tập Tin Nhị Phân</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
+</head>
+
+<body>
+  <div class="app">
+    <!-- Header -->
+    <header class="header">
+      <div class="logo">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+          <rect width="32" height="32" rx="8" fill="url(#g1)" />
+          <path d="M8 22V14h3v8H8zm5.5 0V10h3v12h-3zM19 22v-6h3v6h-3zm5.5 0V8h3v14h-3z" fill="#fff" />
+          <defs>
+            <linearGradient id="g1" x1="0" y1="0" x2="32" y2="32">
+              <stop stop-color="#6366f1" />
+              <stop offset="1" stop-color="#a855f7" />
+            </linearGradient>
+          </defs>
+        </svg>
+        <h1>SortEx</h1>
+      </div>
+      <p class="subtitle">Sắp xếp & minh họa thuật toán trên tập tin nhị phân</p>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+      <!-- Left Panel: Controls -->
+      <section class="panel controls-panel" id="controlsPanel">
+        <h2 class="panel-title">
+          <span class="icon">📂</span> Dữ liệu nguồn
+        </h2>
+
+        <!-- File Input -->
+        <div class="control-group">
+          <label class="file-label" for="fileInput" id="fileLabel">
+            <span class="file-icon">⬆️</span>
+            <span class="file-text">Chọn tập tin nhị phân (.bin)</span>
+            <span class="file-hint">Chứa các số thực 8 bytes (float64)</span>
+          </label>
+          <input type="file" id="fileInput" accept=".bin,.dat,.raw" hidden>
+        </div>
+
+        <!-- Quick Generate Button -->
+        <button class="btn btn-secondary full-width" id="btnShowGen">
+          🎲 Sinh dữ liệu mẫu...
+        </button>
+
+        <!-- Hidden Generation Panel -->
+        <div class="gen-mini-panel hidden" id="genMiniPanel">
+          <div class="info-row">
+            <label>Số lượng:</label>
+            <input type="number" id="genCount" class="mini-input" value="20" min="2" max="1000">
+          </div>
+          <div class="info-row">
+            <label>Phạm vi:</label>
+            <div class="range-inputs">
+              <input type="number" id="genMin" class="mini-input" value="0">
+              <span>-</span>
+              <input type="number" id="genMax" class="mini-input" value="100">
+            </div>
+          </div>
+          <button class="btn btn-accent full-width btn-sm" id="btnGenExecute">
+            🚀 Tạo & Tải lên
+          </button>
+        </div>
+
+
+        <!-- File Info -->
+        <div class="file-info hidden" id="fileInfo">
+          <div class="info-row">
+            <span class="info-label">Tên tập tin:</span>
+            <span class="info-value" id="fileName">—</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Kích thước:</span>
+            <span class="info-value" id="fileSize">—</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Số phần tử:</span>
+            <span class="info-value" id="elemCount">—</span>
+          </div>
+          <button class="btn btn-secondary btn-sm full-width mt-sm" id="btnDownloadOriginal">
+            💾 Tải tập tin gốc (.bin)
+          </button>
+        </div>
+
+
+        <!-- Algorithm Picker -->
+        <h2 class="panel-title mt">
+          <span class="icon">⚙️</span> Thuật toán
+        </h2>
+        <div class="control-group">
+          <select id="algorithmSelect" class="select">
+            <option value="bubble">Bubble Sort</option>
+            <option value="selection">Selection Sort</option>
+            <option value="insertion">Insertion Sort</option>
+            <option value="merge">Merge Sort</option>
+            <option value="quick">Quick Sort</option>
+          </select>
+        </div>
+
+        <!-- Speed -->
+        <div class="control-group">
+          <label class="slider-label">
+            Tốc độ: <span id="speedValue">50</span>ms / bước
+          </label>
+          <input type="range" id="speedSlider" class="slider" min="1" max="500" value="50">
+        </div>
+
+        <!-- Playback buttons -->
+        <div class="btn-row">
+          <button class="btn btn-primary" id="btnPlay" disabled>
+            <span id="btnPlayIcon">▶</span> <span id="btnPlayText">Chạy</span>
+          </button>
+          <button class="btn btn-secondary" id="btnStep" disabled>⏭ Bước</button>
+          <button class="btn btn-secondary" id="btnReset" disabled>↺ Đặt lại</button>
+        </div>
+
+        <!-- Download -->
+        <button class="btn btn-accent full-width mt" id="btnDownload" disabled>
+          ⬇️ Tải kết quả (.bin)
+        </button>
+
+        <!-- Stats -->
+        <div class="stats hidden" id="statsPanel">
+          <h2 class="panel-title mt">
+            <span class="icon">📊</span> Thống kê
+          </h2>
+          <div class="info-row">
+            <span class="info-label">So sánh:</span>
+            <span class="info-value" id="statComparisons">0</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Hoán đổi:</span>
+            <span class="info-value" id="statSwaps">0</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Bước hiện tại:</span>
+            <span class="info-value" id="statSteps">0</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Panel: Visualization -->
+      <section class="panel viz-panel" id="vizPanel">
+        <h2 class="panel-title">
+          <span class="icon">📊</span> Minh họa quá trình sắp xếp
+        </h2>
+
+        <!-- Algorithm description -->
+        <div class="algo-desc" id="algoDesc">
+          Chọn tập tin dữ liệu và thuật toán, sau đó nhấn <strong>Chạy</strong> để bắt đầu minh họa.
+        </div>
+
+        <!-- Canvas -->
+        <div class="canvas-wrapper" id="canvasWrapper">
+          <canvas id="sortCanvas"></canvas>
+          <div class="canvas-placeholder" id="canvasPlaceholder">
+            <span class="placeholder-icon">📈</span>
+            <span>Chưa có dữ liệu</span>
+          </div>
+        </div>
+
+        <!-- Data table preview -->
+        <div class="data-table-wrapper hidden" id="dataTableWrapper">
+          <h3 class="panel-subtitle">Giá trị dữ liệu</h3>
+          <div class="data-table-scroll">
+            <table class="data-table" id="dataTable">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Giá trị</th>
+                </tr>
+              </thead>
+              <tbody id="dataTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <p>CS523 – SortEx &copy; 2026 | Sắp xếp tập tin nhị phân</p>
+    </footer>
+  </div>
+
+  <script src="{{ url_for('static', filename='index.js') }}"></script>
+</body>
+
+</html>

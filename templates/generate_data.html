@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SortEx – Tạo Dữ Liệu Mẫu</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
+    <style>
+        .gen-card {
+            max-width: 480px;
+            margin: 2rem auto;
+        }
+
+        .gen-card .control-group {
+            margin-bottom: 1rem;
+        }
+
+        .gen-card label {
+            display: block;
+            font-size: .82rem;
+            color: #999;
+            margin-bottom: .3rem;
+        }
+
+        .gen-input {
+            width: 100%;
+            padding: .55rem .7rem;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, .12);
+            background: rgba(255, 255, 255, .06);
+            color: #e2e2f0;
+            font-family: inherit;
+            font-size: .85rem;
+        }
+
+        .gen-input:focus {
+            outline: none;
+            border-color: #818cf8;
+        }
+
+        .preview {
+            max-height: 180px;
+            overflow-y: auto;
+            font-size: .78rem;
+            color: #aaa;
+            background: rgba(0, 0, 0, .25);
+            border-radius: 8px;
+            padding: .6rem;
+            margin-top: .6rem;
+            font-variant-numeric: tabular-nums;
+            line-height: 1.6;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 1rem;
+            font-size: .82rem;
+            color: #818cf8;
+            text-decoration: none;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app">
+        <header class="header">
+            <div class="logo">
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                    <rect width="32" height="32" rx="8" fill="url(#g1)" />
+                    <path d="M8 22V14h3v8H8zm5.5 0V10h3v12h-3zM19 22v-6h3v6h-3zm5.5 0V8h3v14h-3z" fill="#fff" />
+                    <defs>
+                        <linearGradient id="g1" x1="0" y1="0" x2="32" y2="32">
+                            <stop stop-color="#6366f1" />
+                            <stop offset="1" stop-color="#a855f7" />
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <h1>SortEx</h1>
+            </div>
+            <p class="subtitle">Tạo dữ liệu mẫu</p>
+        </header>
+
+        <main class="main" style="display:block;">
+            <a href="{{ url_for('index') }}" class="back-link">← Quay lại trang chính</a>
+
+            <section class="panel gen-card">
+                <h2 class="panel-title"><span class="icon">🎲</span> Tạo tập tin nhị phân</h2>
+
+                <div class="control-group">
+                    <label for="genCount">Số lượng phần tử (float64)</label>
+                    <input type="number" id="genCount" class="gen-input" value="20" min="2" max="100000">
+                </div>
+
+                <div class="control-group">
+                    <label for="genMin">Giá trị nhỏ nhất</label>
+                    <input type="number" id="genMin" class="gen-input" value="0" step="0.1">
+                </div>
+
+                <div class="control-group">
+                    <label for="genMax">Giá trị lớn nhất</label>
+                    <input type="number" id="genMax" class="gen-input" value="100" step="0.1">
+                </div>
+
+                <div class="control-group">
+                    <label for="genDecimals">Số chữ số thập phân</label>
+                    <input type="number" id="genDecimals" class="gen-input" value="2" min="0" max="10">
+                </div>
+
+                <button class="btn btn-primary full-width" id="btnGenerate">🎲 Tạo & Xem trước</button>
+
+                <div id="previewSection" class="hidden">
+                    <div class="preview" id="preview"></div>
+                    <button class="btn btn-accent full-width" id="btnSave" style="margin-top:.8rem;">⬇️ Tải xuống
+                        (.bin)</button>
+                </div>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <p>CS523 – SortEx &copy; 2026 | Tạo dữ liệu mẫu</p>
+        </footer>
+    </div>
+
+    <script>
+        (function () {
+            const $ = id => document.getElementById(id);
+            let generatedArray = null;
+
+            $('btnGenerate').addEventListener('click', () => {
+                const count = Math.max(2, Math.min(100000, parseInt($('genCount').value, 10) || 20));
+                const min = parseFloat($('genMin').value) || 0;
+                const max = parseFloat($('genMax').value) || 100;
+                const decimals = Math.max(0, parseInt($('genDecimals').value, 10) || 2);
+                const factor = Math.pow(10, decimals);
+
+                generatedArray = new Float64Array(count);
+                for (let i = 0; i < count; i++) {
+                    generatedArray[i] = Math.round((min + Math.random() * (max - min)) * factor) / factor;
+                }
+
+                // Preview
+                const lines = [];
+                const show = Math.min(count, 100);
+                for (let i = 0; i < show; i++) lines.push(`[${i}] ${generatedArray[i]}`);
+                if (count > show) lines.push(`… và ${count - show} phần tử khác`);
+                $('preview').textContent = lines.join('\n');
+                $('previewSection').classList.remove('hidden');
+            });
+
+            $('btnSave').addEventListener('click', () => {
+                if (!generatedArray) return;
+                const blob = new Blob([generatedArray.buffer], { type: 'application/octet-stream' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `data_${generatedArray.length}.bin`;
+                a.click();
+                URL.revokeObjectURL(url);
+            });
+        })();
+    </script>
+</body>
+
+</html>
